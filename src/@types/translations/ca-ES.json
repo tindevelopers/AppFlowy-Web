@@ -270,7 +270,7 @@
       "invalidCloudURLScheme": "Esquema no vàlid",
       "cloudServerType": "Servidor al núvol",
       "cloudLocal": "Local",
-      "cloudAppFlowy": "@:appName Cloud Beta",
+      "cloudTin": "@:appName Cloud Beta",
       "clickToCopy": "Feu clic per copiar",
       "selfHostContent": "document",
       "cloudURLHint": "Introduïu l'URL base del vostre servidor",

@@ -44,7 +44,7 @@ function ImporterDialogContent({ source, onSuccess }: { source?: string; onSucce
         <ViewTab
           className={'flex flex-row items-center justify-center gap-1.5'}
           value={'appflowy'}
-          label={t('web.importFromAppFlowy')}
+          label={t('web.importFromTin')}
           icon={<AppFlowyIcon className={'mb-0 h-4 w-4'} />}
         />
         <ViewTab
@@ -68,7 +68,7 @@ function ImporterDialogContent({ source, onSuccess }: { source?: string; onSucce
               void handleUpload(files[0]);
             }}
             disabled={isUploading}
-            placeholder={t('web.dropAppFlowyFile')}
+            placeholder={t('web.dropTinFile')}
             loading={isUploading}
           />
           {progress > 0 && (

@@ -203,7 +203,7 @@ export function Workspaces() {
                     data-testid='import-from-appflowy'
                     onSelect={() => handleOpenImport('appflowy')}
                   >
-                    <div className={'flex-1 text-left'}>{t('web.importFromAppFlowy')}</div>
+                    <div className={'flex-1 text-left'}>{t('web.importFromTin')}</div>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     data-testid='import-from-notion'

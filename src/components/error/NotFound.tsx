@@ -41,7 +41,7 @@ const NotFound = () => {
               </div>
             )}
             <div className='w-full text-center'>
-              {t('publish.createWithAppFlowy')}
+              {t('publish.createWithTin')}
               <div className={'flex w-full items-center justify-center gap-1'}>
                 <div className={'font-semibold text-text-action'}>{t('publish.fastWithAI')}</div>
                 <div>{t('publish.tryItNow')}</div>

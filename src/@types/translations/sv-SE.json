@@ -268,9 +268,9 @@
       "historicalUserListTooltip": "Den här listan visar dina anonyma konton. Du kan klicka på ett konto för att se dess detaljer. Anonyma konton skapas genom att klicka på knappen \"Kom igång\".",
       "openHistoricalUser": "Klicka för att öppna det anonyma kontot",
       "customPathPrompt": "Att lagra @:appName-datamappen i en molnsynkroniserad mapp som Google Drive kan innebära risker. Om databasen i den här mappen nås eller ändras från flera platser samtidigt, kan det resultera i synkroniseringskonflikter och potentiell datakorruption",
-      "importAppFlowyData": "Importera data från extern @:appName-mapp",
-      "importingAppFlowyDataTip": "Dataimport pågår. Stäng inte appen",
-      "importAppFlowyDataDescription": "Kopiera data från en extern @:appName-datamapp och importera den till den aktuella @:appName-datamappen",
+      "importTinData": "Importera data från extern @:appName-mapp",
+      "importingTinDataTip": "Dataimport pågår. Stäng inte appen",
+      "importTinDataDescription": "Kopiera data från en extern @:appName-datamapp och importera den till den aktuella @:appName-datamappen",
       "importSuccess": "@:appName-datamappen har importerats",
       "importFailed": "Det gick inte att importera @:appName-datamappen",
       "importGuide": "För ytterligare information, snälla se det refererade dokumentet"
