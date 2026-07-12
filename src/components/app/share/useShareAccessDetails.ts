@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { AccessLevel, IPeopleWithAccessType } from '@/application/types';
+import { AccessLevel, IPeopleWithAccessType, Role } from '@/application/types';
 import { findAncestors, findView } from '@/components/_shared/outline/utils';
 import { useAppOutline, useCurrentWorkspaceId, useUserWorkspaceInfo } from '@/components/app/app.hooks';
 import { AccessService } from '@/application/services/domains';
@@ -67,10 +67,20 @@ export function useShareAccessDetails(viewId: string, opened: boolean) {
     [loadedPeopleViewId, people, viewId]
   );
   const currentUserAccessLevel = useMemo(() => {
-    return (
-      peopleForCurrentView.find((person) => person.email === currentUserEmail)?.access_level ?? outlineView?.access_level
-    );
-  }, [currentUserEmail, outlineView?.access_level, peopleForCurrentView]);
+    const explicitLevel = peopleForCurrentView.find((person) => person.email === currentUserEmail)?.access_level ??
+      outlineView?.access_level;
+
+    if (explicitLevel !== undefined) return explicitLevel;
+
+    // Fall back to workspace role for self-hosted deployments where
+    // per-view access levels are not available from the sharing API.
+    const workspaceRole = userWorkspaceInfo?.selectedWorkspace?.role;
+
+    if (workspaceRole === Role.Owner) return AccessLevel.FullAccess;
+    if (workspaceRole === Role.Member) return AccessLevel.ReadAndWrite;
+    if (workspaceRole === Role.Guest) return AccessLevel.ReadOnly;
+    return undefined;
+  }, [currentUserEmail, outlineView?.access_level, peopleForCurrentView, userWorkspaceInfo?.selectedWorkspace?.role]);
   const sectionType = useMemo(() => {
     if (!hasLoadedPeople || loadedPeopleViewId !== viewId) {
       return ShareSectionType.Unknown;
