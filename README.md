@@ -80,6 +80,10 @@ to deploy AppFlowy Web.
 - **[AppFlowy Cloud Repository](https://github.com/AppFlowy-IO/AppFlowy-Cloud)** - Backend setup and configuration
 - **[Official Documentation](https://appflowy.com/docs)** - Complete AppFlowy documentation
 
+## 🤖 AI Agent Tools (CLI and MCP Server)
+
+For managing AppFlowy Cloud workspaces, pages, members, and search programmatically or via AI agents, check out the `appflowy-agent-tools` inside the [AppFlowy Client Repository](../AppFlowy/README.md#ai-agent-tools-cli-and-mcp-server). You can build and run both the CLI and the stdio Model Context Protocol (MCP) server from source there.
+
 ## License
 Distributed under the AGPLv3 License. See [`LICENSE.md`](https://github.com/AppFlowy-IO/AppFlowy-Web/blob/main/LICENSE) for
 more information.

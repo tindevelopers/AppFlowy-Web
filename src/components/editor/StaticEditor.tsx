@@ -24,6 +24,41 @@ const emptyValue: Descendant[] = [
   },
 ] as Descendant[];
 
+const normalizeNode = (node: any): any => {
+  if (!node || typeof node !== 'object') return node;
+
+  if ('type' in node && node.type !== undefined) {
+    let children = node.children;
+
+    if (!children || !Array.isArray(children) || children.length === 0) {
+      children = [
+        {
+          type: YjsEditorKey.text,
+          textId: (node.blockId || 'default') + '-text',
+          children: [{ text: '' }],
+        },
+      ];
+    } else {
+      children = children.map(normalizeNode);
+    }
+
+    return {
+      ...node,
+      children,
+    };
+  }
+
+  if ('text' in node) {
+    return node;
+  }
+
+  return node;
+};
+
+const normalizeValue = (value: Descendant[]): Descendant[] => {
+  return value.map(normalizeNode);
+};
+
 export interface StaticEditorProps extends Omit<EditorContextState, 'readOnly'> {
   value: Descendant[];
 }
@@ -42,7 +77,11 @@ export const StaticEditor = memo(({ value, layoutStyle = defaultLayoutStyle, ...
 
     return nextEditor;
   }, []);
-  const initialValue = value.length > 0 ? value : emptyValue;
+  const initialValue = useMemo(() => {
+    const rawValue = value.length > 0 ? value : emptyValue;
+
+    return normalizeValue(rawValue);
+  }, [value]);
 
   return (
     <EditorContextProvider
