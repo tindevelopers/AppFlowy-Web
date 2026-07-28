@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { SettingMenuItem } from '@/application/types';
 import { AccountAppPanel } from '@/components/app/settings/AccountAppPanel';
+import { ApiAccessPanel } from '@/components/app/settings/ApiAccessPanel';
 import { ManageDataPanel } from '@/components/app/settings/ManageDataPanel';
 import { MembersPanel } from '@/components/app/settings/MembersPanel';
 import { ProfilePanel } from '@/components/app/settings/ProfilePanel';
@@ -48,6 +49,7 @@ export function SettingsDialog({ open, onClose, onRequestOpen }: SettingsDialogP
         {selectedItem === SettingMenuItem.PROFILE && <ProfilePanel />}
         {selectedItem === SettingMenuItem.MEMBERS && <MembersPanel />}
         {selectedItem === SettingMenuItem.MANAGE_DATA && <ManageDataPanel />}
+        {selectedItem === SettingMenuItem.API_ACCESS && <ApiAccessPanel />}
       </div>
     </Dialog>
   );

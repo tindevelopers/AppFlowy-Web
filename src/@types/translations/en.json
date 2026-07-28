@@ -839,6 +839,60 @@
         "failed": "Failed to back up workspace"
       }
     },
+    "apiAccess": {
+      "menuLabel": "API access",
+      "title": "API access",
+      "description": "Manage API keys for programmatic access to your Tin workspace",
+      "copy": "Copy {{label}}",
+      "copied": "{{label}} copied to clipboard",
+      "copiedLabel": "Copied",
+      "connection": {
+        "title": "Connection",
+        "baseUrl": "Base URL",
+        "gotrueUrl": "GoTrue URL",
+        "wsUrl": "WebSocket URL",
+        "workspaceId": "Current workspace ID",
+        "notConfigured": "Not configured"
+      },
+      "keys": {
+        "title": "API keys",
+        "description": "Create and manage API keys for use with CLI tools, MCP servers, and automation. Keys have full read/write access to your workspaces.",
+        "createButton": "Create key",
+        "noKeys": "No API keys yet. Create one to enable programmatic access.",
+        "loading": "Loading API keys...",
+        "columnName": "Name",
+        "columnPrefix": "Prefix",
+        "columnCreated": "Created",
+        "columnLastUsed": "Last used",
+        "columnExpires": "Expires",
+        "columnActions": "",
+        "never": "Never",
+        "revoke": "Revoke",
+        "createDialogTitle": "Create API key",
+        "createDialogDescription": "API keys allow external tools and automation to access your workspaces via the REST API.",
+        "nameLabel": "Key name",
+        "namePlaceholder": "e.g. factory-prod, claude-desktop",
+        "workspaceScopeLabel": "Workspace scope",
+        "scopeCurrentWorkspace": "Current workspace",
+        "scopeAllWorkspaces": "All workspaces",
+        "expiryLabel": "Expiry",
+        "expiryNever": "Never",
+        "expiry30d": "30 days",
+        "expiry90d": "90 days",
+        "createdTitle": "API key created",
+        "createdWarning": "Copy this key now. You will not be able to see it again. Store it somewhere safe.",
+        "keyLabel": "Your API key",
+        "copyKey": "Copy key",
+        "revokeConfirmTitle": "Revoke API key",
+        "revokeConfirmDescription": "Any service using this key will lose access immediately. This action cannot be undone."
+      },
+      "errors": {
+        "loadFailed": "Failed to load API keys",
+        "createFailed": "Failed to create API key",
+        "revokeFailed": "Failed to revoke API key",
+        "copyFailed": "Failed to copy to clipboard"
+      }
+    },
     "accountPage": {
       "menuLabel": "My account",
       "menuLabelAccountApp": "Account & App",

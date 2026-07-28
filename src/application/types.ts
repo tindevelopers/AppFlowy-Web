@@ -1578,6 +1578,7 @@ export enum SettingMenuItem {
   MEMBERS = 'MEMBERS',
   MANAGE_DATA = 'MANAGE_DATA',
   SITES = 'SITES',
+  API_ACCESS = 'API_ACCESS',
 }
 
 export interface GenerateAISummaryRowPayload {
