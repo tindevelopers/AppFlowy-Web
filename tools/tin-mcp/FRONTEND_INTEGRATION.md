@@ -4,50 +4,48 @@
 
 The Tin web app (`appflowy-web`) provides the **API access settings panel** (Phase 0, Part B) which lets users create, list, and revoke `afk_` API keys. These keys are used by `tin-mcp`, a standalone MCP server, to authenticate against `projects.tinconnect.com`.
 
-## API Key Contract
+## Backend Status
 
-- **Prefix**: `afk_` (server validates then strips this prefix before JWT fallback)
-- **Format**: `afk_` + 32 hex chars (UUID without dashes)
-- **Auth header**: `Authorization: Bearer afk_<key>`
-- **Key creation**: `POST /api/workspace/{workspace_id}/api-key` returns `{ code: 0, data: { api_key: { id, name, key, created_at } } }`
-- **Key listing**: `GET /api/workspace/{workspace_id}/api-key` returns `{ code: 0, data: { api_keys: [...] } }`
-- **Key revocation**: `DELETE /api/workspace/{workspace_id}/api-key/{key_id}`
+The AppFlowy-Cloud backend (`appflowy-cloud`) at https://github.com/tindevelopers/AppFlowy-Cloud has the full API key system implemented:
 
-## What the Frontend Needs to Know
+| Component | File | Status |
+|---|---|---|
+| Database migration | `migrations/20260727000000_api_keys.sql` | Deployed on startup via sqlx |
+| API handlers | `src/api/api_key.rs` | Registered at `POST/GET/DELETE /api/api-key` |
+| Business logic | `src/biz/api_key.rs` | Create, list, revoke, validate, touch_last_used |
+| Auth middleware | `src/biz/authentication/api_key_auth.rs` | Recognizes `afk_` Bearer tokens |
+| Auth integration | `src/biz/authentication/jwt.rs` | Routes `afk_` tokens through API key flow |
+| Limit | `MAX_ACTIVE_KEYS_PER_USER = 20` | Enforced at create time |
 
-### 1. Key display format
+## API Key Contract (Confirmed)
 
-The `key` field in the API response is the full token. The frontend should:
-- Show it **once** at creation time with a "copy" button
-- After dismissal, show only `afk_****` prefix and the key name/date
-- Never log or store the full key in localStorage (the server handles storage)
+The frontend and backend use these matching contracts:
 
-### 2. Settings panel location
+### Create Key
+- **Frontend**: `POST /api/api-key` → `{ name: string, workspace_id?: string, expires_at?: string }`
+- **Backend**: `POST /api/api-key` → `{ name: String, workspace_id: Option<Uuid>, expires_at: Option<DateTime> }`
+- **Response**: `{ id, name, key, key_prefix, workspace_id, created_at, expires_at }`
+  - `key` is returned **exactly once** at creation (the plaintext `afk_...` token)
 
-The API access panel lives at **Settings → API access** in the Tin web app UI. It renders:
-- Key list (name, created date, masked key, revoke button)
-- "Create key" form (name input + submit)
+### List Keys  
+- **Frontend**: `GET /api/api-key`
+- **Backend**: `GET /api/api-key`
+- **Response**: `[{ id, name, key_prefix, workspace_id, created_at, expires_at, last_used_at, revoked_at }]`
 
-### 3. MCP server consumption
+### Revoke Key
+- **Frontend**: `DELETE /api/api-key/{id}`
+- **Backend**: `DELETE /api/api-key/{key_id}`
+- **Response**: 200 Ok or 404 if not found (without leaking existence)
 
-The `tin-mcp` binary expects:
-- `TIN_MCP_API_KEY=afk_<key>` environment variable
-- Or `~/.config/tin-mcp/config.toml` with `api_key = "afk_<key>"`
+### Auth
+- Key management requires a **session JWT** (not an API key)
+- API keys cannot manage other API keys — the backend rejects `afk_` tokens on the api-key routes
+- The backend stores `key_hash = SHA-256(plaintext)`, never the plaintext key
 
-The key is used for:
-- **REST calls**: `Authorization: Bearer afk_<key>` header
-- **Collab sync**: `restore_token()` with the key as `access_token` (WebSocket auth)
-
-### 4. No frontend changes needed for Phase 2
-
-Phase 2 (write tools) does **not** require any frontend changes. The write tools:
-- Call the same REST endpoints as the CLI (`appflowy-cli.js`)
-- Use the same collab-sync protocol as `collab-sync` Rust tool
-- Save backups locally on the user's machine (not on the server)
-
-### 5. Rebranding note
-
-The frontend code uses `AppFlowy` naming internally (e.g., `APPFLOWY_API_KEY` env var alias). The MCP server accepts both `TIN_MCP_API_KEY` and `APPFLOWY_API_KEY` for backward compatibility.
+## Key Format
+- Prefix: `afk_`
+- Full format: `afk_` + 48 alphanumeric characters  
+- Displayed once at creation, then only the 12-character prefix (e.g. `afk_aB3dEf...`)
 
 ## Endpoints Used by tin-mcp
 
@@ -67,16 +65,25 @@ The frontend code uses `AppFlowy` naming internally (e.g., `APPFLOWY_API_KEY` en
 | POST | `/api/workspace/{ws}/space` | `appflowy_create_space` |
 | POST | `/api/workspace/{ws}/page-view` | `appflowy_create_page` |
 
+### Key management endpoints (REST)
+
+| Method | Path | Auth | Used by |
+|---|---|---|---|
+| GET | `/api/api-key` | Session JWT | Settings → API access panel |
+| POST | `/api/api-key` | Session JWT | Settings → API access panel (create) |
+| DELETE | `/api/api-key/{id}` | Session JWT | Settings → API access panel (revoke) |
+
 ### Write endpoints (collab-sync / WebSocket)
 
 | Method | Protocol | Used by tool |
 |---|---|---|
-| `get_collab` | WebSocket via client-api | `appflowy_read_page`, `appflowy_update_page_section`, `appflowy_insert_section` |
-| `create_collab` | WebSocket via client-api | `appflowy_update_page_section`, `appflowy_insert_section`, `appflowy_restore_page` |
+| `get_collab` | WebSocket via client-api | Read page, replace section, insert section |
+| `create_collab` | WebSocket via client-api | Update section, insert section, restore page |
 
-## Key Rotation
+## Deployment Flow
 
-If a key is revoked from the settings panel, any active MCP server using that key will fail on the next request with `401`. The user must:
-1. Create a new key in Settings → API access
-2. Run `tin-mcp auth set-key` to update
-3. Restart the MCP server
+1. Push code to `appflowy-cloud` main branch
+2. GitHub Actions `build_ghcr.yml` builds Docker image → pushes to GHCR
+3. Watchtower on VPS detects new `latest` tag → pulls and restarts server
+4. On startup, `sqlx::migrate!("./migrations")` applies pending migrations including `af_api_keys` table
+5. `/api/api-key` endpoint goes live
