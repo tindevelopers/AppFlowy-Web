@@ -396,7 +396,12 @@ export function usePageOperations({
           const parentView = findParentView(outlineRef.current, viewId);
 
           if (parentView?.extra?.is_database_container && parentView.children?.length > 0) {
-            resolvedVisibleViewIds = parentView.children.map(c => c.view_id);
+            // Only use all siblings as a fallback when the user hasn't made an
+            // explicit selection via the Publish panel checkboxes. Respect the
+            // user's choice when they've chosen which tabs to publish.
+            if (!visibleViewIds || visibleViewIds.length === 0) {
+              resolvedVisibleViewIds = parentView.children.map(c => c.view_id);
+            }
           }
         }
 

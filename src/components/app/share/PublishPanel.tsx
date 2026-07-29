@@ -210,9 +210,9 @@ function PublishPanel({
 
   useEffect(() => {
     if (!hasPublished && isDatabase && view) {
-      const childIds = [view.view_id, ...view.children.map((child) => child.view_id)];
-
-      setVisibleViewId(childIds);
+      // Pre-select only the current view, not all children.
+      // Users can tick additional tabs if they want them published together.
+      setVisibleViewId([view.view_id]);
     } else {
       setVisibleViewId(undefined);
     }
