@@ -19,11 +19,13 @@ const PROD_BASE = 'https://projects.tinconnect.com';
 
 // Known published page in the "Clients" workspace, with a real published
 // child so the scoped outline has actual content to assert against.
+// (This fixture also doubles as the "publish subpages" cascade demo: the
+// parent and child were published together via the new cascade feature.)
 const NAMESPACE = '69c5bdee-caa8-4311-afb6-c46b535e230f';
-const PUBLISH_NAME = 'Hello-World-t-b10614c8-9ee4-4302-815d-ea81a61efdd2';
-const PUBLISHED_PAGE_NAME = 'Hello World test.';
-const CHILD_VIEW_ID = '66d126c9-7758-410d-a458-7ba6b611a3c6';
-const CHILD_PAGE_NAME = 'Share-Scope Fix Verification Child';
+const PUBLISH_NAME = 'Subpage-Casca-243e99c0-1419-4beb-a063-a544f27956a5';
+const PUBLISHED_PAGE_NAME = 'Subpage Cascade Test';
+const CHILD_VIEW_ID = '4fb8d7a8-77aa-4cf8-ba03-6bf552a5f362';
+const CHILD_PAGE_NAME = 'Subpage Cascade Test Child';
 
 // Other published pages/spaces in the same workspace that must NOT leak
 // into this page's sidebar.
