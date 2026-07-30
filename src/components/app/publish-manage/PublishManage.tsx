@@ -61,7 +61,7 @@ export function PublishManage({ onClose }: { onClose?: () => void }) {
     if (!namespace) return;
     setLoading(true);
     try {
-      const outline = await PublishService.getOutline(namespace);
+      const outline = await PublishService.getOutlineForNamespace(namespace);
 
       setPublishViews(
         flattenViews(outline)

@@ -112,6 +112,7 @@ export {
   updatePublishHomepage,
   removePublishHomepage,
   getPublishOutline,
+  getPublishOutlineForNamespace,
   getPublishViewComments,
   getReactions,
   createGlobalCommentOnPublishView,

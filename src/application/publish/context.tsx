@@ -409,9 +409,9 @@ export const PublishProvider = ({
   );
 
   const loadOutline = useCallback(async () => {
-    if (!namespace) return;
+    if (!namespace || !publishName) return;
     try {
-      const res = await PublishService.getOutline(namespace);
+      const res = await PublishService.getOutline(namespace, publishName);
 
       if (!res) {
         throw new Error('Publish outline not found');

@@ -4,6 +4,7 @@ export {
   updatePublishHomepage as updateHomepage,
   removePublishHomepage as removeHomepage,
   getPublishOutline as getOutline,
+  getPublishOutlineForNamespace as getOutlineForNamespace,
   getPublishViewComments as getComments,
   createGlobalCommentOnPublishView as createComment,
   deleteGlobalCommentOnPublishView as deleteComment,

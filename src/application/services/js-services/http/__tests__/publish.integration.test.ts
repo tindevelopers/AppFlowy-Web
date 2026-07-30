@@ -208,7 +208,7 @@ describe('HTTP API - Publish Operations', () => {
         it('should get publish outline', async () => {
             // This will likely fail with invalid namespace, but tests error handling
             try {
-                await APIService.getPublishOutline('invalid-namespace');
+                await APIService.getPublishOutline('invalid-namespace', 'invalid-publish-name');
                 expect(true).toBe(false); // Should not reach here
             } catch (error: any) {
                 expect(error).toBeDefined();

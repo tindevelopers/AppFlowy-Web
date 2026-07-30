@@ -280,7 +280,15 @@ export async function removePublishHomepage(workspaceId: string) {
   );
 }
 
-export async function getPublishOutline(publishNamespace: string) {
+export async function getPublishOutline(publishNamespace: string, publishName: string) {
+  const url = `/api/workspace/published-outline/${publishNamespace}/${publishName}`;
+
+  return executeAPIRequest<View>(() =>
+    getAxios()?.get<APIResponse<View>>(url)
+  ).then((data) => data.children);
+}
+
+export async function getPublishOutlineForNamespace(publishNamespace: string) {
   const url = `/api/workspace/published-outline/${publishNamespace}`;
 
   return executeAPIRequest<View>(() =>
