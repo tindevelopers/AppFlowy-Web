@@ -477,7 +477,7 @@ export function useGetSubscriptions() {
   return context.getSubscriptions;
 }
 
-/** Memoized `{ publish, unpublish }`. Narrower alternative to `useAppOperations()`. */
+/** Memoized `{ publish, unpublish, loadDescendantViews, publishSubtree }`. Narrower alternative to `useAppOperations()`. */
 export function usePublishing() {
   const context = useContext(AppOperationsContext);
 
@@ -488,7 +488,9 @@ export function usePublishing() {
   return useMemo(() => ({
     publish: context.publish,
     unpublish: context.unpublish,
-  }), [context.publish, context.unpublish]);
+    loadDescendantViews: context.loadDescendantViews,
+    publishSubtree: context.publishSubtree,
+  }), [context.publish, context.unpublish, context.loadDescendantViews, context.publishSubtree]);
 }
 
 /** Memoized `{ getCollabHistory, previewCollabVersion, revertCollabVersion }`. For version history UI. */

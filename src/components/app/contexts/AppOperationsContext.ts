@@ -2,6 +2,7 @@ import { createContext } from 'react';
 
 import { CollabVersionRecord } from '@/application/collab-version.type';
 import { SyncContext } from '@/application/services/js-services/sync-protocol';
+import { PublishSubtreeResult } from '@/components/app/hooks/usePageOperations';
 import {
   CreateDatabaseViewPayload,
   CreateDatabaseViewResponse,
@@ -42,7 +43,7 @@ import {
  * **Narrower hooks** (read a subset of this context):
  * - `useToView()` — just the `toView` navigation callback
  * - `useGetSubscriptions()` — just `getSubscriptions`
- * - `usePublishing()` — memoized `{ publish, unpublish }`
+ * - `usePublishing()` — memoized `{ publish, unpublish, loadDescendantViews, publishSubtree }`
  * - `useCollabHistory()` — memoized `{ getCollabHistory, previewCollabVersion, revertCollabVersion }`
  *
  * **Full context hook:** `useAppOperations()` — returns the entire context.
@@ -101,9 +102,22 @@ export interface AppOperationsContextType {
 
   // ── Publishing ─────────────────────────────────────────────────────
   /** Publish a view to the web. Hook: `usePublishing()`. */
-  publish?: (view: View, publishName?: string, visibleViewIds?: string[]) => Promise<void>;
+  publish?: (
+    view: View,
+    publishName?: string,
+    visibleViewIds?: string[],
+    options?: { skipOutlineReload?: boolean }
+  ) => Promise<void>;
   /** Unpublish a previously published view. Hook: `usePublishing()`. */
   unpublish?: (viewId: string) => Promise<void>;
+  /** Load a view's full descendant subtree (for the "publish subpages" cascade). Hook: `usePublishing()`. */
+  loadDescendantViews?: (rootViewId: string) => Promise<View[]>;
+  /** Publish a batch of descendant views alongside their parent. Hook: `usePublishing()`. */
+  publishSubtree?: (
+    descendants: View[],
+    options: { includeDrafts: boolean },
+    onProgress?: (done: number, total: number) => void
+  ) => Promise<PublishSubtreeResult>;
 
   // ── AI operations ──────────────────────────────────────────────────
   /** Generate an AI summary for a database row. */

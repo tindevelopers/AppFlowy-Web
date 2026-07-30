@@ -2,7 +2,7 @@ import { Button, CircularProgress, Divider, Tooltip, Typography } from '@mui/mat
 import React, { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AccessLevel, ViewLayout } from '@/application/types';
+import { AccessLevel, View, ViewLayout } from '@/application/types';
 import { ReactComponent as CheckboxCheckSvg } from '@/assets/icons/check_filled.svg';
 import { ReactComponent as PublishIcon } from '@/assets/icons/earth.svg';
 import { ReactComponent as CheckboxUncheckSvg } from '@/assets/icons/uncheck.svg';
@@ -29,7 +29,7 @@ function PublishPanel({
   shareDetailsLoading?: boolean;
 }) {
   const { t } = useTranslation();
-  const { publish, unpublish } = usePublishing();
+  const { publish, unpublish, loadDescendantViews, publishSubtree } = usePublishing();
   const {
     url,
     loadPublishInfo,
@@ -49,11 +49,48 @@ function PublishPanel({
   const [visibleViewId, setVisibleViewId] = React.useState<string[] | undefined>(undefined);
   const [commentEnabled, setCommentEnabled] = React.useState<boolean | undefined>(undefined);
   const [duplicateEnabled, setDuplicateEnabled] = React.useState<boolean | undefined>(undefined);
+  // "Also publish all subpages" cascade — a separate feature from single-page
+  // publish. Lets the user publish a page's descendant subtree in one action.
+  const [publishSubpages, setPublishSubpages] = React.useState<boolean>(false);
+  const [includeDrafts, setIncludeDrafts] = React.useState<boolean>(true);
+  const [descendantViews, setDescendantViews] = React.useState<View[] | undefined>(undefined);
+  const [descendantsLoading, setDescendantsLoading] = React.useState<boolean>(false);
+  const [cascadeProgress, setCascadeProgress] = React.useState<{ done: number; total: number } | undefined>(
+    undefined
+  );
 
   // Reset session-local overrides when the target view changes
   useEffect(() => {
     setPublishedOverride(undefined);
+    setPublishSubpages(false);
+    setIncludeDrafts(true);
+    setDescendantViews(undefined);
+    setCascadeProgress(undefined);
   }, [viewId]);
+
+  // Fetch the descendant subtree once "Also publish all subpages" is enabled,
+  // so the panel can show a live count before the user commits to publishing.
+  useEffect(() => {
+    if (!publishSubpages || !view || descendantViews !== undefined || !loadDescendantViews) return;
+
+    let cancelled = false;
+
+    setDescendantsLoading(true);
+    void loadDescendantViews(view.view_id)
+      .then((views) => {
+        if (!cancelled) setDescendantViews(views);
+      })
+      .catch(() => {
+        if (!cancelled) setDescendantViews([]);
+      })
+      .finally(() => {
+        if (!cancelled) setDescendantsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [publishSubpages, view, descendantViews, loadDescendantViews]);
 
   useEffect(() => {
     if (opened) {
@@ -77,17 +114,55 @@ function PublishPanel({
 
       try {
         await publish(view, newPublishName, visibleViewId);
+
+        let cascadeResult: Awaited<ReturnType<NonNullable<typeof publishSubtree>>> | undefined;
+
+        if (publishSubpages && publishSubtree) {
+          const views = descendantViews ?? (await loadDescendantViews?.(view.view_id)) ?? [];
+
+          if (views.length > 0) {
+            cascadeResult = await publishSubtree(views, { includeDrafts }, (done, total) => {
+              setCascadeProgress({ done, total });
+            });
+          }
+        }
+
         setPublishedOverride(true);
         await loadPublishInfo();
-        notify.success(t('publish.publishSuccessfully'));
+
+        if (cascadeResult && cascadeResult.failed > 0) {
+          notify.error(
+            t('shareAction.publishSubpagesPartialFailure', {
+              succeeded: cascadeResult.succeeded,
+              failed: cascadeResult.failed,
+            })
+          );
+        } else if (cascadeResult && cascadeResult.succeeded > 0) {
+          notify.success(t('shareAction.publishWithSubpagesSuccess', { count: cascadeResult.succeeded }));
+        } else {
+          notify.success(t('publish.publishSuccessfully'));
+        }
         // eslint-disable-next-line
       } catch (e: any) {
         notify.error(e.message);
       } finally {
         setPublishLoading(false);
+        setCascadeProgress(undefined);
       }
     },
-    [loadPublishInfo, publish, t, view, publishInfo, visibleViewId]
+    [
+      loadPublishInfo,
+      publish,
+      t,
+      view,
+      publishInfo,
+      visibleViewId,
+      publishSubpages,
+      publishSubtree,
+      descendantViews,
+      loadDescendantViews,
+      includeDrafts,
+    ]
   );
 
   const handleUnpublish = useCallback(async () => {
@@ -218,6 +293,10 @@ function PublishPanel({
     }
   }, [hasPublished, isDatabase, view]);
 
+  const draftDescendantCount = descendantViews?.filter((v) => !v.is_published).length ?? 0;
+  const publishedDescendantCount = (descendantViews?.length ?? 0) - draftDescendantCount;
+  const subpagesToPublishCount = includeDrafts ? descendantViews?.length ?? 0 : publishedDescendantCount;
+
   const renderUnpublished = useCallback(() => {
     if (!view) return null;
     const list = [view, ...view.children];
@@ -299,9 +378,64 @@ function PublishPanel({
         >
           <span className={'w-full'}>{publishButton}</span>
         </Tooltip>
+        <div className={'flex flex-col gap-3 rounded-[16px] border border-border-primary px-4 py-3 text-sm'}>
+          <div className={'flex items-center justify-between gap-4'}>
+            <span>{t('shareAction.publishSubpages')}</span>
+            <Switch
+              checked={publishSubpages}
+              onChange={(e) => setPublishSubpages(e.target.checked)}
+              size={'small'}
+              disabled={publishLoading}
+              inputProps={{ 'data-testid': 'publish-subpages-switch' } as React.InputHTMLAttributes<HTMLInputElement>}
+            />
+          </div>
+          {publishSubpages && (
+            <>
+              <Divider />
+              <div className={'flex items-center justify-between gap-4'}>
+                <span>{t('shareAction.includeDrafts')}</span>
+                <Switch
+                  checked={includeDrafts}
+                  onChange={(e) => setIncludeDrafts(e.target.checked)}
+                  size={'small'}
+                  disabled={publishLoading}
+                  inputProps={
+                    { 'data-testid': 'publish-include-drafts-switch' } as React.InputHTMLAttributes<HTMLInputElement>
+                  }
+                />
+              </div>
+              <div className={'text-text-secondary'} data-testid={'publish-subpages-preview'}>
+                {descendantsLoading
+                  ? t('shareAction.publishSubpagesCounting')
+                  : cascadeProgress
+                    ? t('shareAction.publishSubpagesProgress', {
+                        done: cascadeProgress.done,
+                        total: cascadeProgress.total,
+                      })
+                    : subpagesToPublishCount > 0
+                      ? t('shareAction.publishSubpagesPreview', { count: subpagesToPublishCount })
+                      : t('shareAction.publishSubpagesNone')}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     );
-  }, [currentUserAccessLevel, handlePublish, isDatabase, publishLoading, shareDetailsLoading, t, view, visibleViewId]);
+  }, [
+    currentUserAccessLevel,
+    handlePublish,
+    isDatabase,
+    publishLoading,
+    shareDetailsLoading,
+    t,
+    view,
+    visibleViewId,
+    publishSubpages,
+    includeDrafts,
+    descendantsLoading,
+    cascadeProgress,
+    subpagesToPublishCount,
+  ]);
 
   return (
     <div className='flex flex-col items-start gap-1 self-stretch px-3 py-4'>

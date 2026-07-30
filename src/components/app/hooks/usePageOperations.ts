@@ -9,6 +9,7 @@ import {
   publishCollabs,
   PublishCollabMetadata,
 } from '@/application/services/js-services/http/publish-api';
+import { getView } from '@/application/services/js-services/http/view-api';
 import {
   CreateDatabaseViewPayload,
   DuplicatePageOperationOptions,
@@ -28,6 +29,69 @@ import { useAuthInternal } from '../contexts/AuthInternalContext';
 
 // Hook for managing page and space operations
 const DUPLICATE_PRE_SYNC_TIMEOUT_MS = 8000;
+
+// Backend caps subtree fetch depth at 10 (see get_user_workspace_structure).
+const MAX_SUBTREE_FETCH_DEPTH = 10;
+// Limits how many views are published in parallel during a subpage cascade.
+const SUBTREE_PUBLISH_CONCURRENCY = 3;
+
+export interface PublishSubtreeResult {
+  succeeded: number;
+  failed: number;
+  errors: Array<{ view: View; error: unknown }>;
+}
+
+/**
+ * Fetches all descendant views under `rootViewId`, flattened (root itself is
+ * excluded). Database container tabs (Grid/Board/Calendar siblings) are kept
+ * as a single representative node — siblings publish together via
+ * `visible_database_view_ids`, so they aren't walked as independent subpages.
+ */
+async function collectDescendantViews(workspaceId: string, rootViewId: string): Promise<View[]> {
+  const results: View[] = [];
+  const visited = new Set<string>([rootViewId]);
+  const toFetch: string[] = [rootViewId];
+
+  while (toFetch.length > 0) {
+    const parentId = toFetch.shift();
+
+    if (!parentId) continue;
+
+    let parentNode: View | undefined;
+
+    try {
+      parentNode = await getView(workspaceId, parentId, MAX_SUBTREE_FETCH_DEPTH);
+    } catch (e) {
+      Log.error('[publishSubtree] Failed to load subtree for', parentId, e);
+      continue;
+    }
+
+    const stack: View[] = [...(parentNode?.children || [])];
+
+    while (stack.length > 0) {
+      const node = stack.pop();
+
+      if (!node || visited.has(node.view_id)) continue;
+
+      visited.add(node.view_id);
+      results.push(node);
+
+      if (node.extra?.is_database_container) {
+        // Tabs of the same database; don't treat them as separate subpages.
+        continue;
+      }
+
+      if (node.children?.length) {
+        stack.push(...node.children);
+      } else if (node.has_children) {
+        // Hit the depth boundary for this branch — resume from here.
+        toFetch.push(node.view_id);
+      }
+    }
+  }
+
+  return results;
+}
 
 export function usePageOperations({
   outlineRef,
@@ -365,7 +429,12 @@ export function usePageOperations({
 
   // Publish view
   const publish = useCallback(
-    async (view: View, publishName?: string, visibleViewIds?: string[]) => {
+    async (
+      view: View,
+      publishName?: string,
+      visibleViewIds?: string[],
+      options?: { skipOutlineReload?: boolean }
+    ) => {
       if (!currentWorkspaceId) return;
       const viewId = view.view_id;
       const isDatabaseLayout =
@@ -446,9 +515,67 @@ export function usePageOperations({
         });
       }
 
-      await loadOutline?.(currentWorkspaceId, false);
+      if (!options?.skipOutlineReload) {
+        await loadOutline?.(currentWorkspaceId, false);
+      }
     },
     [currentWorkspaceId, loadOutline, flushAllSync, outlineRef, getDatabaseIdForViewId]
+  );
+
+  // Load the full descendant subtree of a view (for the "publish subpages" cascade).
+  const loadDescendantViews = useCallback(
+    async (rootViewId: string): Promise<View[]> => {
+      if (!currentWorkspaceId) return [];
+      return collectDescendantViews(currentWorkspaceId, rootViewId);
+    },
+    [currentWorkspaceId]
+  );
+
+  // Publish a batch of descendant views (from loadDescendantViews) alongside the
+  // parent page. `includeDrafts: false` restricts the cascade to descendants
+  // that are already published, leaving never-published pages untouched.
+  const publishSubtree = useCallback(
+    async (
+      descendants: View[],
+      options: { includeDrafts: boolean },
+      onProgress?: (done: number, total: number) => void
+    ): Promise<PublishSubtreeResult> => {
+      const targets = options.includeDrafts ? descendants : descendants.filter((v) => v.is_published);
+      const total = targets.length;
+      const errors: PublishSubtreeResult['errors'] = [];
+      let done = 0;
+
+      onProgress?.(0, total);
+
+      for (let i = 0; i < targets.length; i += SUBTREE_PUBLISH_CONCURRENCY) {
+        const batch = targets.slice(i, i + SUBTREE_PUBLISH_CONCURRENCY);
+        const results = await Promise.allSettled(
+          batch.map((view) => {
+            const visibleViewIds = view.extra?.is_database_container
+              ? [view.view_id, ...(view.children || []).map((c) => c.view_id)]
+              : undefined;
+
+            return publish(view, undefined, visibleViewIds, { skipOutlineReload: true });
+          })
+        );
+
+        results.forEach((result, idx) => {
+          done += 1;
+          if (result.status === 'rejected') {
+            errors.push({ view: batch[idx], error: result.reason });
+          }
+        });
+
+        onProgress?.(done, total);
+      }
+
+      if (currentWorkspaceId) {
+        await loadOutline?.(currentWorkspaceId, false);
+      }
+
+      return { succeeded: total - errors.length, failed: errors.length, errors };
+    },
+    [publish, loadOutline, currentWorkspaceId]
   );
 
   // Unpublish view
@@ -496,6 +623,8 @@ export function usePageOperations({
     getSubscriptions,
     publish,
     unpublish,
+    loadDescendantViews,
+    publishSubtree,
     createOrphanedView: createOrphanedViewOp,
   };
 }
