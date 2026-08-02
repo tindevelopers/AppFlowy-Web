@@ -27,8 +27,12 @@ pub struct Config {
 
 impl Config {
   pub fn load() -> Config {
-    let file = Self::read_config_file().unwrap_or_default();
+    Self::load_with_file(Self::read_config_file().unwrap_or_default())
+  }
 
+  /// Load config with an explicit config-file contents. Used by tests to stay
+  /// hermetic regardless of the on-disk config file.
+  pub fn load_with_file(file: ConfigFile) -> Config {
     let api_key = env::var("TIN_MCP_API_KEY")
       .ok()
       .filter(|s| !s.is_empty())
@@ -73,6 +77,12 @@ impl Config {
       timeout_secs,
       backup,
     }
+  }
+
+  /// Convenience for tests: load as if no config file exists.
+  #[cfg(test)]
+  pub fn load_test() -> Config {
+    Self::load_with_file(ConfigFile::default())
   }
 
   pub fn resolve_key(&self) -> Option<String> {
@@ -153,7 +163,7 @@ mod tests {
     with_env(
       &[("TIN_MCP_BASE_URL", None), ("TIN_MCP_API_KEY", None)],
       || {
-        let cfg = Config::load();
+        let cfg = Config::load_test();
         assert_eq!(cfg.base_url, "https://projects.tinconnect.com");
       },
     );
@@ -167,7 +177,7 @@ mod tests {
         ("APPFLOWY_API_KEY", Some("afk_aliaskey")),
       ],
       || {
-        let cfg = Config::load();
+        let cfg = Config::load_test();
         assert_eq!(cfg.resolve_key().as_deref(), Some("afk_aliaskey"));
       },
     );
@@ -181,7 +191,7 @@ mod tests {
         ("TIN_MCP_ALLOW_INSECURE", None),
       ],
       || {
-        let cfg = Config::load();
+        let cfg = Config::load_test();
         assert_eq!(cfg.base_url, "https://projects.tinconnect.com");
       },
     );
@@ -191,7 +201,7 @@ mod tests {
         ("TIN_MCP_ALLOW_INSECURE", Some("1")),
       ],
       || {
-        let cfg = Config::load();
+        let cfg = Config::load_test();
         assert_eq!(cfg.base_url, "http://localhost:8000");
       },
     );
@@ -205,7 +215,7 @@ mod tests {
         ("APPFLOWY_API_KEY", None),
       ],
       || {
-        let cfg = Config::load();
+        let cfg = Config::load_test();
         assert_eq!(cfg.key_prefix().as_deref(), Some("afk_abcdefgh"));
       },
     );
