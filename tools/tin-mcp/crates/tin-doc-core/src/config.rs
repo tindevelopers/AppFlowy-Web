@@ -139,9 +139,14 @@ impl Config {
 mod tests {
   use super::*;
   use std::env;
+  use std::sync::Mutex;
 
-  // Serialize env-mutating tests; tests share a process.
+  // All config tests mutate process-global env vars. Serialize them so
+  // parallel test threads do not race on the environment.
+  static ENV_LOCK: Mutex<()> = Mutex::new(());
+
   fn with_env<F: FnOnce()>(vars: &[(&str, Option<&str>)], f: F) {
+    let _guard = ENV_LOCK.lock().unwrap();
     let saved: Vec<_> = vars.iter().map(|(k, _)| (*k, env::var(k).ok())).collect();
     for (k, v) in vars {
       match v {
