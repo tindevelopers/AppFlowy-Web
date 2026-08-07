@@ -1,0 +1,56 @@
+{
+  "_comment": "collab-sync manifest: maps template files to existing page views (view_id). Workspace: AppFlowy (931619d9-ed0a-4b47-90b0-b36bc5e8f485). Space: AppFlowy (3e395194-44c0-4986-b637-a2d422d4b797). Layouts: 0=Document, 1=Grid, 2=Board, 3=Calendar, 4=Chat. Use: cargo run -- sync --all --manifest doc/project-template/manifest.json --backup",
+  "pages": {
+    "project-home": {
+      "view_id": "6abfedf2-6898-4171-8c76-df7da85945c2",
+      "source_md": "doc/project-template/templates/shared/01-project-home.md",
+      "sections": ["main"]
+    },
+    "overview": {
+      "view_id": "37203c45-22e6-4985-b26f-4bfecddbd6d1",
+      "source_md": "doc/project-template/templates/shared/02-overview.md",
+      "sections": ["main"]
+    },
+    "credentials": {
+      "view_id": "0236f48d-d300-4191-859d-cde659d764fb",
+      "source_md": "doc/project-template/templates/shared/03-credentials.md",
+      "sections": ["main"]
+    },
+    "programming-instructions": {
+      "view_id": "eecce8bf-718b-439d-a558-f1d68ae5fab8",
+      "source_md": "doc/project-template/templates/shared/04-programming-instructions.md",
+      "sections": ["main"]
+    },
+    "milestones-and-tasks": {
+      "view_id": "3614f99e-1f8b-43f7-bcd8-c33e9559a8a3",
+      "source_md": "doc/project-template/templates/shared/05-milestones-and-tasks.md",
+      "layout": 1,
+      "sections": ["main"]
+    },
+    "meetings-notes": {
+      "view_id": "9111811c-5b8a-48a7-8840-538da1adc905",
+      "source_md": "doc/project-template/templates/shared/06-meetings-notes.md",
+      "sections": ["main"]
+    },
+    "architecture": {
+      "view_id": "e3d2bb5a-6614-47c4-b148-d31f384316bf",
+      "source_md": "doc/project-template/templates/source-code/07-architecture.md",
+      "sections": ["main"]
+    },
+    "deployment": {
+      "view_id": "87382d4e-2147-43dc-809c-c7021063302b",
+      "source_md": "doc/project-template/templates/source-code/08-deployment.md",
+      "sections": ["main"]
+    },
+    "site-map-assets": {
+      "view_id": "REPLACE_WITH_VIEW_ID",
+      "source_md": "doc/project-template/templates/client-facing/07-site-map-assets.md",
+      "sections": ["main"]
+    },
+    "support-handover": {
+      "view_id": "REPLACE_WITH_VIEW_ID",
+      "source_md": "doc/project-template/templates/client-facing/08-support-handover.md",
+      "sections": ["main"]
+    }
+  }
+}
