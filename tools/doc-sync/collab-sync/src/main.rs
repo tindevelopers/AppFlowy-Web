@@ -398,7 +398,7 @@ async fn cmd_sync_all(workspace_id_str: &str, manifest_path: &str, dry_run: bool
         .context("manifest missing 'pages' key")?;
 
     let client = connect_and_auth().await?;
-    let workspace_id: Uuid = workspace_id_str.parse()?;
+    let default_workspace_id: Uuid = workspace_id_str.parse()?;
 
     for (name, page) in pages {
         let view_id = page["view_id"].as_str().context("page missing view_id")?;
@@ -407,7 +407,17 @@ async fn cmd_sync_all(workspace_id_str: &str, manifest_path: &str, dry_run: bool
             .as_array()
             .context("page missing sections")?;
 
-        println!("--- {} ({}) ---", name, view_id);
+        // Per-page workspace override: each manifest entry may set "workspace_id".
+        // Falls back to the CLI --workspace / default workspace.
+        let workspace_id: Uuid = page
+            .get("workspace_id")
+            .and_then(|w| w.as_str())
+            .filter(|w| !w.is_empty())
+            .map(|w| w.parse().context("invalid per-page workspace_id"))
+            .transpose()?
+            .unwrap_or(default_workspace_id);
+
+        println!("--- {} ({}) ws={} ---", name, view_id, workspace_id);
         let object_id: Uuid = view_id.parse()?;
 
         let md_path = source.to_string();

@@ -1,55 +1,103 @@
 {
-  "_comment": "collab-sync manifest: maps template files to existing page views (view_id). Workspace: AppFlowy (931619d9-ed0a-4b47-90b0-b36bc5e8f485). Space: AppFlowy (3e395194-44c0-4986-b637-a2d422d4b797). Layouts: 0=Document, 1=Grid, 2=Board, 3=Calendar, 4=Chat. Use: cargo run -- sync --all --manifest doc/project-template/manifest.json --backup",
+  "_comment": "collab-sync manifest: maps template/seed files to existing page views (view_id) so `sync --all` keeps them updated in place. Each entry may set workspace_id (per-page override); otherwise the CLI --workspace/default applies. Layouts: 0=Document, 1=Grid. Run from repo root: cargo run --manifest-path tools/doc-sync/collab-sync/Cargo.toml -- sync --all --manifest doc/project-template/manifest.json --backup",
   "pages": {
-    "project-home": {
-      "view_id": "6abfedf2-6898-4171-8c76-df7da85945c2",
-      "source_md": "doc/project-template/templates/shared/01-project-home.md",
+    "source-code/appflowy-web/project-home": {
+      "view_id": "6fcdee06-6f2c-4451-a19c-d99ec18ad7da",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
+      "source_md": "doc/project-template/seed/appflowy-web-readme.md",
       "sections": ["main"]
     },
-    "overview": {
-      "view_id": "37203c45-22e6-4985-b26f-4bfecddbd6d1",
-      "source_md": "doc/project-template/templates/shared/02-overview.md",
+    "source-code/appflowy-web/overview": {
+      "view_id": "74967051-ee48-47e4-bf87-d513ec99c0a3",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
+      "source_md": "doc/project-template/seed/appflowy-projects-guide.md",
       "sections": ["main"]
     },
-    "credentials": {
-      "view_id": "0236f48d-d300-4191-859d-cde659d764fb",
+    "source-code/appflowy-web/credentials": {
+      "view_id": "80dc1528-959e-48b1-a398-615b728699f3",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
       "source_md": "doc/project-template/templates/shared/03-credentials.md",
       "sections": ["main"]
     },
-    "programming-instructions": {
-      "view_id": "eecce8bf-718b-439d-a558-f1d68ae5fab8",
-      "source_md": "doc/project-template/templates/shared/04-programming-instructions.md",
+    "source-code/appflowy-web/programming-instructions": {
+      "view_id": "3e93ab0e-c7ac-4e22-98ae-58a8be59eb10",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
+      "source_md": "doc/project-template/templates/source-code/appflowy-web-programming-instructions.md",
       "sections": ["main"]
     },
-    "milestones-and-tasks": {
-      "view_id": "3614f99e-1f8b-43f7-bcd8-c33e9559a8a3",
+    "source-code/appflowy-web/milestones-and-tasks": {
+      "view_id": "d1a71a47-7a53-4819-b493-33bdac5e3d11",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
       "source_md": "doc/project-template/templates/shared/05-milestones-and-tasks.md",
       "layout": 1,
       "sections": ["main"]
     },
-    "meetings-notes": {
-      "view_id": "9111811c-5b8a-48a7-8840-538da1adc905",
+    "source-code/appflowy-web/meetings-notes": {
+      "view_id": "17719b42-e7ee-4d1d-ac64-25ced09b394e",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
       "source_md": "doc/project-template/templates/shared/06-meetings-notes.md",
       "sections": ["main"]
     },
-    "architecture": {
-      "view_id": "e3d2bb5a-6614-47c4-b148-d31f384316bf",
+    "source-code/appflowy-web/architecture": {
+      "view_id": "5117f513-7b4c-4244-b3b9-6f024b4b79b8",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
       "source_md": "doc/project-template/templates/source-code/07-architecture.md",
       "sections": ["main"]
     },
-    "deployment": {
-      "view_id": "87382d4e-2147-43dc-809c-c7021063302b",
+    "source-code/appflowy-web/deployment": {
+      "view_id": "6bbf77f1-04e3-43dc-a221-048a0390e9a1",
+      "workspace_id": "d7cc1938-4ed2-4b8d-a9b6-4cec3c3bc046",
       "source_md": "doc/project-template/templates/source-code/08-deployment.md",
       "sections": ["main"]
     },
-    "site-map-assets": {
-      "view_id": "REPLACE_WITH_VIEW_ID",
-      "source_md": "doc/project-template/templates/client-facing/07-site-map-assets.md",
+
+    "appflowy/AppFlowy/project-home": {
+      "view_id": "6abfedf2-6898-4171-8c76-df7da85945c2",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/seed/appflowy-web-readme.md",
       "sections": ["main"]
     },
-    "support-handover": {
-      "view_id": "REPLACE_WITH_VIEW_ID",
-      "source_md": "doc/project-template/templates/client-facing/08-support-handover.md",
+    "appflowy/AppFlowy/overview": {
+      "view_id": "37203c45-22e6-4985-b26f-4bfecddbd6d1",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/seed/appflowy-projects-guide.md",
+      "sections": ["main"]
+    },
+    "appflowy/AppFlowy/credentials": {
+      "view_id": "0236f48d-d300-4191-859d-cde659d764fb",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/templates/shared/03-credentials.md",
+      "sections": ["main"]
+    },
+    "appflowy/AppFlowy/programming-instructions": {
+      "view_id": "eecce8bf-718b-439d-a558-f1d68ae5fab8",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/templates/source-code/appflowy-web-programming-instructions.md",
+      "sections": ["main"]
+    },
+    "appflowy/AppFlowy/milestones-and-tasks": {
+      "view_id": "3614f99e-1f8b-43f7-bcd8-c33e9559a8a3",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/templates/shared/05-milestones-and-tasks.md",
+      "layout": 1,
+      "sections": ["main"]
+    },
+    "appflowy/AppFlowy/meetings-notes": {
+      "view_id": "9111811c-5b8a-48a7-8840-538da1adc905",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/templates/shared/06-meetings-notes.md",
+      "sections": ["main"]
+    },
+    "appflowy/AppFlowy/architecture": {
+      "view_id": "e3d2bb5a-6614-47c4-b148-d31f384316bf",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/templates/source-code/07-architecture.md",
+      "sections": ["main"]
+    },
+    "appflowy/AppFlowy/deployment": {
+      "view_id": "87382d4e-2147-43dc-809c-c7021063302b",
+      "workspace_id": "931619d9-ed0a-4b47-90b0-b36bc5e8f485",
+      "source_md": "doc/project-template/templates/source-code/08-deployment.md",
       "sections": ["main"]
     }
   }
