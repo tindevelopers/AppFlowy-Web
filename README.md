@@ -76,6 +76,8 @@ to deploy AppFlowy Web.
 
 ## Documentation
 
+- **[AppFlowy Project Family](doc/APPFLOWY_PROJECTS.md)** - Identify and use the AppFlowy projects (Web, Cloud, app-flowy-tin, doc-sync, tin-mcp)
+- **[Project Template & Policy](doc/project-template/README.md)** - The standard page set, policy, and provisioning tooling for structuring AppFlowy projects
 - **[Deployment Guide](doc/DEPLOYMENT.md)** - Detailed environment configuration, architecture diagrams, and troubleshooting
 - **[AppFlowy Cloud Repository](https://github.com/AppFlowy-IO/AppFlowy-Cloud)** - Backend setup and configuration
 - **[Official Documentation](https://appflowy.com/docs)** - Complete AppFlowy documentation
