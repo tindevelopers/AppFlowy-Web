@@ -16,11 +16,11 @@ own deploy pipeline.
 | **AppFlowy Web** | `appflowy-web` | `github.com/tindevelopers/AppFlowy-Web` | Frontend web app (React/TS/Vite) |
 | **AppFlowy Cloud** | `appflowy-cloud` | `github.com/tindevelopers/AppFlowy-Cloud` | Backend (Rust, actix-web) |
 | **app-flowy-tin** | `app-flowy-tin` | `github.com/tindevelopers/app-flowy-tin` | Agent tooling (CLI + MCP) that talks to the Cloud |
-| **doc-sync / collab-sync** | `appflowy-web/tools/doc-sync` | part of AppFlowy-Web | Markdown ↔ workspace page sync tool |
-| **tin-mcp** | `appflowy-web/tools/tin-mcp` | part of AppFlowy-Web | MCP server for IDE agents |
+| **doc-sync / collab-sync** | `app-flowy-tin/doc-sync` | part of app-flowy-tin | Markdown ↔ workspace page sync tool |
+| **tin-projects.mcp** | `app-flowy-tin/tin-projects-mcp` | part of app-flowy-tin | MCP server for IDE agents |
 
 The deployed, user-facing product is the **AppFlowy Web** app served by **AppFlowy Cloud**.
-The **agent tools**, **collab-sync**, and **tin-mcp** are developer/AI tooling layered on top.
+The **agent tools**, **collab-sync**, and **tin-projects.mcp** are developer/AI tooling layered on top.
 
 ---
 
@@ -32,7 +32,7 @@ The browser client. React + TypeScript + Vite, Tailwind CSS, pnpm. Deployed to *
 **Structure:**
 - `src/` — React app (pages, components, lib, i18n, proto, styles)
 - `api/` — server API layer (link-preview, `_lib`)
-- `tools/` — `doc-sync` and `tin-mcp` (see below)
+- `tools/` — `doc-sync` and `tin-projects.mcp` (see below)
 - `playwright/` — e2e tests (BDD + specs)
 - `deploy/`, `docker/` — deployment assets
 
@@ -108,7 +108,7 @@ go build -o appflowy-pp-mcp ./cmd/appflowy-pp-mcp
 
 ---
 
-## 4. doc-sync / collab-sync (`appflowy-web/tools/doc-sync`)
+## 4. doc-sync / collab-sync (`app-flowy-tin/doc-sync`)
 
 A Rust tool that keeps AppFlowy workspace pages in sync with markdown files in a git repo.
 It updates pages **in place** (preserving view IDs, comments, and human edits) by replacing
@@ -120,7 +120,7 @@ Backups are taken before every write by default.
 
 **How to use:**
 ```bash
-cd appflowy-web/tools/doc-sync/collab-sync
+cd app-flowy-tin/doc-sync/collab-sync
 cargo build
 
 ./target/debug/collab-sync list <workspace_id>                    # print page hierarchy + view IDs
@@ -136,7 +136,7 @@ using `collab-sync`. `docs/` in the repo is gitignored; `doc/` is tracked.
 
 ---
 
-## 5. tin-mcp (`appflowy-web/tools/tin-mcp`)
+## 5. tin-projects.mcp (`app-flowy-tin/tin-projects-mcp`)
 
 A turnkey MCP server for IDE agents (Factory Droid, Claude Desktop, Claude Code) to read and
 write pages/workspaces on `projects.tinconnect.com`. Auth is a single `afk_` API key created in
@@ -147,13 +147,13 @@ write pages/workspaces on `projects.tinconnect.com`. Auth is a single `afk_` API
 # Prerequisite: create an afk_ key in the web app Settings → API access.
 
 # Factory Droid
-curl -fsSL https://github.com/tindevelopers/tin-mcp/releases/latest/download/install.sh | sh
-droid mcp add tin-mcp --env TIN_MCP_API_KEY=afk_... -- tin-mcp serve
+curl -fsSL https://github.com/tindevelopers/tin-projects.mcp/releases/latest/download/install.sh | sh
+droid mcp add tin-projects.mcp --env TIN_MCP_API_KEY=afk_... -- tin-projects.mcp serve
 
 # Claude Code
-claude mcp add tin-mcp --env TIN_MCP_API_KEY=afk_... -- tin-mcp serve
+claude mcp add tin-projects.mcp --env TIN_MCP_API_KEY=afk_... -- tin-projects.mcp serve
 
-# Claude Desktop: download tin-mcp.mcpb and double-click; prompt for API key.
+# Claude Desktop: download tin-projects-mcp.mcpb and double-click; prompt for API key.
 ```
 Tools include `appflowy_server_info`, `appflowy_list_workspaces`, `appflowy_get_page_tree`,
 `appflowy_read_page`, and write tools with optimistic concurrency (`doc_state_hash`).
@@ -170,9 +170,9 @@ Tools include `appflowy_server_info`, `appflowy_list_workspaces`, `appflowy_get_
         ▲
         │  structural REST / document collab
         │
-  [app-flowy-tin] ─ agent CLI + MCP   [tin-mcp] ─ MCP   [doc-sync/collab-sync] ─ markdown sync
+  [app-flowy-tin] ─ agent CLI + MCP   [tin-projects.mcp] ─ MCP   [doc-sync/collab-sync] ─ markdown sync
 ```
 
 All five talk to the same portal at `https://projects.tinconnect.com`. Which one you use
 depends on what you're doing: browse/edit → **Web**; API/backend work → **Cloud**;
-agent/automation → **app-flowy-tin**, **tin-mcp**, or **doc-sync**.
+agent/automation → **app-flowy-tin**, **tin-projects.mcp**, or **doc-sync**.

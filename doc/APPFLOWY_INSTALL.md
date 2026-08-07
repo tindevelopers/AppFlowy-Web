@@ -4,7 +4,7 @@ This guide installs the AppFlowy tooling and MCP servers on a new machine so an 
 (Claude Code, Cursor, Factory Droid, Claude Desktop) can read and write to
 **`https://projects.tinconnect.com`** (the self-hosted AppFlowy Cloud portal).
 
-> **Current status (2026-08-07):** neither `AppFlowy-Web` (for `tin-mcp`) nor `app-flowy-tin`
+> **Current status (2026-08-07):** neither `AppFlowy-Web` (for `tin-projects-mcp`) nor `app-flowy-tin`
 > (for the agent tools) has **published prebuilt release binaries yet**. The one-liner
 > installers below are the intended path and will work once releases are published; until
 > then, use the **build-from-source** sections which are fully tested. Everything here is
@@ -30,12 +30,12 @@ Base URL: `https://projects.tinconnect.com` (default everywhere, no change neede
 |------|---------------|--------------|------|
 | **appflowy-pp-cli** | `app-flowy-tin/appflowy-agent-tools` (Go) | Structural REST CLI (workspaces, pages, search, members) | CLI |
 | **appflowy-pp-mcp** | `app-flowy-tin/appflowy-agent-tools` (Go) | MCP server wrapping the CLI (stdio) | MCP |
-| **tin-mcp** | `appflowy-web/tools/tin-mcp` (Rust) | MCP server: read/write pages, spaces, section-marked content, backups | MCP |
+| **tin-projects-mcp** | `app-flowy-tin/tin-projects-mcp` (Rust) | MCP server: read/write pages, spaces, section-marked content, backups | MCP |
 | **appflowy-mcp** | `app-flowy-tin/appflowy-mcp` (TypeScript) | MCP server: create notes, search pages, manage workspace | MCP |
-| **collab-sync** | `appflowy-web/tools/doc-sync/collab-sync` (Rust) | Markdown ↔ workspace page sync (marker-based, in-place) | CLI |
+| **collab-sync** | `app-flowy-tin/doc-sync/collab-sync` (Rust) | Markdown ↔ workspace page sync (marker-based, in-place) | CLI |
 
-You typically want **one MCP server** (pick `appflowy-pp-mcp` or `tin-mcp`; both expose
-AppFlowy tools). Install `tin-mcp` if you need section-marked content writes and backups;
+You typically want **one MCP server** (pick `appflowy-pp-mcp` or `tin-projects-mcp`; both expose
+AppFlowy tools). Install `tin-projects-mcp` if you need section-marked content writes and backups;
 install `appflowy-pp-mcp` if you need the structural CLI too.
 
 ---
@@ -78,13 +78,13 @@ appflowy-pp-mcp --help
 
 ---
 
-## 2. Install `tin-mcp` (Rust)
+## 2. Install `tin-projects-mcp` (Rust)
 
 ### 2a. One-liner (works once releases exist)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tindevelopers/appflowy-web/main/tools/tin-mcp/install.sh | sh
-# installs to ~/.local/bin/tin-mcp
+curl -fsSL https://raw.githubusercontent.com/tindevelopers/appflowy-web/main/tools/tin-projects-mcp/install.sh | sh
+# installs to ~/.local/bin/tin-projects-mcp
 ```
 
 ### 2b. Build from source (reliable today)
@@ -93,14 +93,14 @@ Requires Rust toolchain (1.96+).
 
 ```bash
 # From an appflowy-web checkout:
-cd /path/to/appflowy-web/tools/tin-mcp
+cd /path/to/app-flowy-tin/tin-projects-mcp
 cargo build --release
-# binary at target/release/tin-mcp
-cp target/release/tin-mcp "$HOME/.local/bin/tin-mcp"
+# binary at target/release/tin-projects-mcp
+cp target/release/tin-projects-mcp "$HOME/.local/bin/tin-projects-mcp"
 
 # configure + verify
-tin-mcp auth set-key          # prompts for afk_ key
-tin-mcp doctor                # checks connectivity + auth
+tin-projects-mcp auth set-key          # prompts for afk_ key
+tin-projects-mcp doctor                # checks connectivity + auth
 ```
 
 ---
@@ -117,7 +117,7 @@ npm run build
 
 ---
 
-## 4. Install `collab-sync` (Rust CLI for markdown sync)
+## 4. Install `collab-sync` (from app-flowy-tin) (Rust CLI for markdown sync)
 
 ```bash
 git clone https://github.com/tindevelopers/AppFlowy-Web.git
@@ -139,7 +139,7 @@ Usage: see `doc/APPFLOWY_PROJECTS.md` §4 and the repo's `doc/project-template/m
 ## 5. Register the MCP server in your IDE
 
 Choose the binary path you installed (below, `<MCP_CMD>` is one of:
-`/path/to/appflowy-pp-mcp`, `/path/to/tin-mcp serve`, or `node /path/to/appflowy-mcp/dist/index.js`).
+`/path/to/appflowy-pp-mcp`, `/path/to/tin-projects-mcp serve`, or `node /path/to/appflowy-mcp/dist/index.js`).
 
 ### 5.1 Claude Code
 
@@ -210,14 +210,14 @@ Restart Claude Desktop.
 ## 6. Verify it works
 
 ```bash
-# tin-mcp
-tin-mcp doctor
+# tin-projects-mcp
+tin-projects-mcp doctor
 
 # appflowy-pp-cli
 appflowy-pp-cli workspace list --json
 ```
 
-In the IDE, ask the agent to call `appflowy_server_info` (tin-mcp) or
+In the IDE, ask the agent to call `appflowy_server_info` (tin-projects-mcp) or
 `appflowy_*` tools. A successful reply confirms the key is valid and the portal is reachable.
 
 ---
@@ -226,10 +226,10 @@ In the IDE, ask the agent to call `appflowy_server_info` (tin-mcp) or
 
 | Variable | Tool | Description | Default |
 |----------|------|-------------|---------|
-| `TIN_MCP_API_KEY` | tin-mcp | API key (`afk_…`) | required |
-| `APPFLOWY_API_KEY` | tin-mcp | Alias for TIN_MCP_API_KEY | — |
-| `TIN_MCP_BASE_URL` | tin-mcp | Base URL | `https://projects.tinconnect.com` |
-| `TIN_MCP_WORKSPACE` | tin-mcp | Default workspace ID | — |
+| `TIN_MCP_API_KEY` | tin-projects-mcp | API key (`afk_…`) | required |
+| `APPFLOWY_API_KEY` | tin-projects-mcp | Alias for TIN_MCP_API_KEY | — |
+| `TIN_MCP_BASE_URL` | tin-projects-mcp | Base URL | `https://projects.tinconnect.com` |
+| `TIN_MCP_WORKSPACE` | tin-projects-mcp | Default workspace ID | — |
 | `APPFLOWY_EMAIL` / `APPFLOWY_PASSWORD` | appflowy-pp, collab-sync | GoTrue login | — |
 | `APPFLOWY_TOKEN` | appflowy-pp, collab-sync | Bearer token / afk_ key | — |
 | `APPFLOWY_BASE_URL` | all | Base URL | `https://projects.tinconnect.com` |
